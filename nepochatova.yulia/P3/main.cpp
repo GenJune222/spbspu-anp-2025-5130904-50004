@@ -1,69 +1,60 @@
 #include <fstream>
 #include <stdexcept>
+#include <iostream>
 #include "io.h"
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
-  size_t n = 0, m = 0, allocatedRows = 0;
-
-  int **arr = nullptr;
-  bool dynamic = false;
-
-  const size_t MAX_N = 100;
-  const size_t MAX_M = 100;
-
-  int staticMatrix[MAX_N][MAX_M];
-  int *staticRows[MAX_N];
+  int num = 0;
 
   try {
     nepochatova::checkArgs(argc, argv);
-
-    dynamic = argv[1][0] == '2';
-
-    std::ifstream in(argv[2]);
-    if (!in.is_open())
-      throw std::runtime_error("Input file can't be opened");
-
-    if (!(in >> n >> m))
-      throw std::runtime_error("Invalid matrix format");
-
-    if (n == 0 || m == 0) {
-      std::ofstream out(argv[3]);
-      out << "0 0\n";
-      return 0;
-    }
-    if (!dynamic) {
-      if (n > MAX_N || m > MAX_M) {
-        throw std::runtime_error("Array too large");
-      }
-      for (size_t i = 0; i < n; ++i) {
-        staticRows[i] = staticMatrix[i];
-      }
-      arr = staticRows;
-    } else {
-      arr = new int *[n];
-      for (size_t i = 0; i < n; ++i) {
-        arr[i] = new int[m];
-        ++allocatedRows;
-      }
-    }
-    nepochatova::readMatrix(argv[2], arr, n, m);
-    nepochatova::transformMatrixSpiral(arr, n, m);
-
-    std::ofstream out(argv[3]);
-    nepochatova::writeMatrix(out, arr, n, m);
-  } catch (...) {
-    if (dynamic && arr) {
-      for (size_t i = 0; i < allocatedRows; ++i)
-        delete[] arr[i];
-      delete[] arr;
-    }
+    num = argv[1][0] - '0';
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << "\n";
     return 1;
   }
-  if (dynamic) {
-    for (size_t i = 0; i < allocatedRows; ++i)
-      delete[] arr[i];
-    delete[] arr;
+
+  std::ifstream input(argv[2]);
+  size_t n = 0, m = 0;
+  input >> n >> m;
+  if (input.fail()) {
+    std::cerr << "Matrix unread" << "\n";
+    return 2;
   }
+  int * arr = nullptr;
+  const size_t MaxStaticArraySize= 1000;
+  int staticMatrix[MaxStaticArraySize];
+
+  if (num == 1) {
+    if (n * m > MaxStaticArraySize) {
+      std::cerr << "Matrix too large for static mode\n";
+      return 2;
+    }
+    arr = staticMatrix;
+  } else {
+    arr = new int[n * m];
+  }
+
+  try {
+    nepochatova::readMatrix(input, arr, n, m);
+    std::ofstream output(argv[3]);
+    if (!output.is_open()) {
+      throw std::runtime_error("Cannot open output file");
+    }
+    nepochatova::transformMatrixSpiral(arr, n, m);
+    nepochatova::transformMatrixCircular(arr, n, m);
+    nepochatova::writeMatrix(output, arr, n, m);
+    if (num == 2) {
+      delete[] arr;
+    }
+  } catch (const std::exception & e) {
+    std::cerr << e.what() << "\n";
+    if (num == 2) {
+      delete[] arr;
+    }
+    return 2;
+  }
+
   return 0;
 }

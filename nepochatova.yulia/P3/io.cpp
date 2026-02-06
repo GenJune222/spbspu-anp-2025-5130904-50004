@@ -1,8 +1,8 @@
-#include <iostream>
 #include <stdexcept>
 #include "io.h"
 
-int nepochatova::checkArgs(int argc, char **argv) {
+int nepochatova::checkArgs(int argc, char **argv)
+{
   if (argc < 4) {
     throw std::invalid_argument("Not enough arguments");
   }
@@ -27,26 +27,21 @@ int nepochatova::checkArgs(int argc, char **argv) {
   return 0;
 }
 
-void nepochatova::readMatrix(const std::string &filename, int **arr, size_t &n, size_t &m) {
-  std::ifstream in(filename);
-  if (!in)
-    throw std::runtime_error("Input file can't be opened");
-
-  if (!(in >> n >> m))
-    throw std::runtime_error("Invalid matrix format");
-
-  if (n == 0 || m == 0)
+void nepochatova::readMatrix(std::istream& in, int* arr, size_t n, size_t m)
+{
+  if (n == 0 || m == 0) {
     return;
+  }
 
-  for (size_t i = 0; i < n; ++i) {
-    for (size_t j = 0; j < m; ++j) {
-      if (!(in >> arr[i][j]))
-        throw std::runtime_error("Invalid matrix data");
+  for (size_t i = 0; i < n * m; ++i) {
+    if (!(in >> arr[i])) {
+      throw std::runtime_error("Invalid matrix data");
     }
   }
 }
 
-void nepochatova::writeMatrix(std::ofstream &out, const int *const*arr, size_t n, size_t m) {
+void nepochatova::writeMatrix(std::ofstream &out, const int *arr, size_t n, size_t m)
+{
   if (arr == nullptr || n == 0 || m == 0) {
     out << "0 0\n";
     return;
@@ -54,7 +49,7 @@ void nepochatova::writeMatrix(std::ofstream &out, const int *const*arr, size_t n
 
   for (size_t i = 0; i < n; ++i) {
     for (size_t j = 0; j < m; ++j) {
-      out << arr[i][j];
+      out << arr[i * m + j];
       if (j != m - 1) out << " ";
     }
     out << "\n";
