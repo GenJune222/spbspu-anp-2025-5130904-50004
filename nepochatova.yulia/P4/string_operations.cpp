@@ -8,30 +8,32 @@ char *nepochatova::readString(std::istream &in, size_t &length) {
   size_t bufSize = 32;
   length = 0;
 
-  char *str = static_cast<char *>(malloc(bufSize));
+  char *str = reinterpret_cast< char * >(malloc(bufSize));
   if (!str) {
     in.flags(saved);
     return nullptr;
   }
 
-  while (true) {
-    char c;
-    if (!(in >> c) || c == '\n') {
-      break;
-    }
-
-    if (length + 1 == bufSize) {
+  char c;
+  while (in >> c && c != '\n') {
+    if (length + 1 >= bufSize) {
       bufSize *= 2;
-      char *resized = static_cast<char *>(realloc(str, bufSize));
+      char* resized = reinterpret_cast<char*>(realloc(str, bufSize));
       if (!resized) {
         free(str);
+        length = 0;
         in.flags(saved);
         return nullptr;
       }
       str = resized;
     }
-
     str[length++] = c;
+  }
+  if (in.eof() && length == 0) {
+    free(str);
+    length = 0;
+    in.flags(saved);
+    return nullptr;
   }
 
   str[length] = '\0';
@@ -39,16 +41,8 @@ char *nepochatova::readString(std::istream &in, size_t &length) {
   return str;
 }
 
-size_t nepochatova::my_strlen(const char *str) {
-  size_t len = 0;
-  if (!str) return 0;
-  while (str[len] != '\0') {
-    len++;
-  }
-  return len;
-}
-
-int nepochatova::seq_sym(const char *str) {
+int nepochatova::seq_sym(const char *str)
+{
   if (str == nullptr) {
     return 0;
   }
@@ -61,7 +55,8 @@ int nepochatova::seq_sym(const char *str) {
   return count;
 }
 
-size_t nepochatova::unc_sym(const char *str1, const char *str2, char *result, size_t result_capacity) {
+size_t nepochatova::unc_sym(const char *str1, const char *str2, char *result, size_t result_capacity)
+{
   if (str1 == 0 || str2 == 0 || result == 0 || result_capacity == 0) {
     return 0;
   }

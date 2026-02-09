@@ -4,24 +4,23 @@
 int main()
 {
   size_t len1 = 0;
-  std::cout << "Enter first string: ";
   char *data1 = nepochatova::readString(std::cin, len1);
 
+  const char *data2 = "test string";
   size_t len2 = 0;
-  std::cout << "Enter second string: ";
-  char *data2 = nepochatova::readString(std::cin, len2);
 
-  if (!data1 || !data2) {
-    std::cerr << "Memory error" << "\n";
-    free(data1);
-    free(data2);
+  while (data2[len2] != '\0') {
+    len2++;
+  }
+
+  if (!data1) {
+    std::cerr << "Memory error or EOF" << "\n";
     return 1;
   }
 
-  if (len1 == 0 || len2 == 0) {
+  if (len1 == 0) {
     std::cerr << "Empty input" << "\n";
     free(data1);
-    free(data2);
     return 1;
   }
 
@@ -37,7 +36,6 @@ int main()
   if (!result_buffer) {
     std::cerr << "Memory error for result buffer" << "\n";
     free(data1);
-    free(data2);
     return 1;
   }
 
@@ -50,7 +48,6 @@ int main()
   }
 
   free(data1);
-  free(data2);
   free(result_buffer);
 
   return 0;
