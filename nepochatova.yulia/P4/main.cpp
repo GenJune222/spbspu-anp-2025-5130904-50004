@@ -31,7 +31,7 @@ int main()
   std::cout << "Second string has " << seq_count2 << " sequential symbol pairs\n";
 
   size_t max_result_size = len1 + len2 + 1;
-  char *result_buffer = (char *) malloc(max_result_size);
+  char *result_buffer = reinterpret_cast< char * >(malloc(max_result_size));
 
   if (!result_buffer) {
     std::cerr << "Memory error for result buffer" << "\n";
